@@ -3,18 +3,17 @@ import { View, Text, Image, Pressable, Animated, StyleSheet, Dimensions } from '
 import { Audio } from 'expo-av';
 
 const GameScreen: React.FC = () => {
-  const [isLongPressed, setIsLongPressed] = useState(false);
-  const [currentY, setCurrentY] = useState(300);
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
   const bottomY = screenHeight - 250;
   const gravity = 0.5;
+  const velocityX = 2;
   const faceY = useRef(new Animated.Value(bottomY)).current;
   const faceX = useRef(new Animated.Value(50)).current;
   const currentX = useRef(50);
   const currentYRef = useRef<number>(bottomY);
   const velocityYRef = useRef<number>(0);
-  const physicsRef = useRef<NodeJS.Timeout | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isDashingRef = useRef<boolean>(false);
+  const animationRef = useRef<number | null>(null);
 
   const bounceSound = useRef<Audio.Sound | null>(null);
   const dashSound = useRef<Audio.Sound | null>(null);
@@ -37,8 +36,9 @@ const GameScreen: React.FC = () => {
 
     loadSounds();
 
-    const physicsLoop = () => {
-      velocityYRef.current += gravity;
+    const gameLoop = () => {
+      const currentGravity = isDashingRef.current ? 0 : gravity;
+      velocityYRef.current += currentGravity;
       let newY = currentYRef.current + velocityYRef.current;
       if (newY > bottomY) {
         newY = bottomY;
@@ -50,17 +50,20 @@ const GameScreen: React.FC = () => {
       }
       currentYRef.current = newY;
       faceY.setValue(newY);
+
+      if (isDashingRef.current) {
+        let newX = currentX.current + velocityX;
+        currentX.current = Math.max(0, Math.min(newX, screenWidth - 80));
+        faceX.setValue(currentX.current);
+      }
+
+      animationRef.current = requestAnimationFrame(gameLoop);
     };
-    physicsRef.current = setInterval(physicsLoop, 16);
+    animationRef.current = requestAnimationFrame(gameLoop);
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      if (physicsRef.current) {
-        clearInterval(physicsRef.current);
-        physicsRef.current = null;
+      if (animationRef.current !== null) {
+        cancelAnimationFrame(animationRef.current);
       }
       bounceSound.current?.unloadAsync();
       dashSound.current?.unloadAsync();
@@ -69,26 +72,14 @@ const GameScreen: React.FC = () => {
 
   const handleLongPress = () => {
     console.log('Long press detected');
-    setIsLongPressed(true);
-    intervalRef.current = setInterval(() => {
-      currentX.current = Math.min(currentX.current + 10, screenWidth - 80);
-      Animated.timing(faceX, {
-        toValue: currentX.current,
-        duration: 100,
-        useNativeDriver: false,
-      }).start();
-    }, 100);
+    isDashingRef.current = true;
 
     dashSound.current?.setIsLoopingAsync(true);
     dashSound.current?.replayAsync();
   };
 
   const handlePressOut = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    setIsLongPressed(false);
+    isDashingRef.current = false;
 
     dashSound.current?.stopAsync();
   };
