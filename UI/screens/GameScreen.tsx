@@ -1,14 +1,9 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-
 
 const GameScreen: React.FC = () => {
   return (
-    <LinearGradient
-      colors={['#0ea5e9', '#ffffff']}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <Text>Game Screen</Text>
       <Image
         source={require('../assets/images/joshua_face.png')}
@@ -20,7 +15,7 @@ const GameScreen: React.FC = () => {
           height: 80,
         }}
       />
-    </LinearGradient>
+    </View>
   );
 };
 
