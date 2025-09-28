@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Image, Pressable, Animated, StyleSheet, Dimensions } from 'react-native';
+import { Audio } from 'expo-av';
 
 const GameScreen: React.FC = () => {
   const [isLongPressed, setIsLongPressed] = useState(false);
@@ -8,6 +9,33 @@ const GameScreen: React.FC = () => {
   const faceX = useRef(new Animated.Value(50)).current;
   const currentX = useRef(50);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const bounceSound = useRef<Audio.Sound | null>(null);
+  const dashSound = useRef<Audio.Sound | null>(null);
+
+  useEffect(() => {
+    const loadSounds = async () => {
+      const [{ sound: bounce }, { sound: dash }] = await Promise.all([
+        Audio.Sound.createAsync(
+          require('../assets/audio/bounce.mp3'),
+          { shouldPlay: false }
+        ),
+        Audio.Sound.createAsync(
+          require('../assets/audio/dash.mp3'),
+          { shouldPlay: false }
+        )
+      ]);
+      bounceSound.current = bounce;
+      dashSound.current = dash;
+    };
+
+    loadSounds();
+
+    return () => {
+      bounceSound.current?.unloadAsync();
+      dashSound.current?.unloadAsync();
+    };
+  }, []);
 
   const { width: screenWidth } = Dimensions.get('window');
 
@@ -22,6 +50,9 @@ const GameScreen: React.FC = () => {
         useNativeDriver: false,
       }).start();
     }, 100);
+
+    dashSound.current?.setIsLoopingAsync(true);
+    dashSound.current?.replayAsync();
   };
 
   const handlePressOut = () => {
@@ -30,6 +61,8 @@ const GameScreen: React.FC = () => {
       intervalRef.current = null;
     }
     setIsLongPressed(false);
+
+    dashSound.current?.stopAsync();
   };
 
   const handlePress = () => {
@@ -39,6 +72,8 @@ const GameScreen: React.FC = () => {
       duration: 300,
       useNativeDriver: false,
     }).start(() => setCurrentY(newY));
+
+    bounceSound.current?.replayAsync();
   };
 
   return (
