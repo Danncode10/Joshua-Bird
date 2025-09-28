@@ -37,8 +37,7 @@ const GameScreen: React.FC = () => {
     loadSounds();
 
     const gameLoop = () => {
-      const currentGravity = isDashingRef.current ? 0 : gravity;
-      velocityYRef.current += currentGravity;
+      velocityYRef.current += gravity;
       let newY = currentYRef.current + velocityYRef.current;
       if (newY > bottomY) {
         newY = bottomY;
