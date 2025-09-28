@@ -32,6 +32,10 @@ const GameScreen: React.FC = () => {
     loadSounds();
 
     return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       bounceSound.current?.unloadAsync();
       dashSound.current?.unloadAsync();
     };
