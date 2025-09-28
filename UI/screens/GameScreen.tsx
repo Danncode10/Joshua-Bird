@@ -1,19 +1,27 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, Image, Pressable, Animated, StyleSheet } from 'react-native';
+import { View, Text, Image, Pressable, Animated, StyleSheet, Dimensions } from 'react-native';
 
 const GameScreen: React.FC = () => {
   const [isLongPressed, setIsLongPressed] = useState(false);
   const [currentY, setCurrentY] = useState(300);
   const faceY = useRef(new Animated.Value(300)).current;
   const faceX = useRef(new Animated.Value(50)).current;
+  const currentX = useRef(50);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const { width: screenWidth } = Dimensions.get('window');
 
   const handleLongPress = () => {
     console.log('Long press detected');
     setIsLongPressed(true);
     intervalRef.current = setInterval(() => {
-      console.log('Continuous long press detected');
-    }, 500);
+      currentX.current = Math.min(currentX.current + 10, screenWidth - 80);
+      Animated.timing(faceX, {
+        toValue: currentX.current,
+        duration: 100,
+        useNativeDriver: false,
+      }).start();
+    }, 100);
   };
 
   const handlePressOut = () => {
@@ -42,6 +50,7 @@ const GameScreen: React.FC = () => {
 
       <Pressable
         onPress={handlePress}
+        delayLongPress={500}
         onLongPress={handleLongPress}
         onPressOut={handlePressOut}
         style={{
