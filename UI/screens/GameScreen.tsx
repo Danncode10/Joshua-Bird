@@ -1,24 +1,52 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Image, Pressable, Animated, Easing, StyleSheet, Dimensions } from 'react-native';
 import { Audio } from 'expo-av';
+import Pipe from '../components/Pipe';
 
 const GameScreen: React.FC = () => {
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const faceSize = 80;
 const bottomY = screenHeight - 140; // Adjusted to prevent bottom clipping (faceSize + 40px margin)
 const gravity = 0.5;
-const velocityX = 2;
+const pipeWidth = 80;
+const gapHeight = 250;
+const basePipeSpeed = 5 / 3;
+const fastPipeSpeed = 5;
+const currentPipeSpeed = useRef(basePipeSpeed);
+
+  const [pipes, setPipes] = useState<{id: number; x: number; gapY: number}[]>([]);
+
   const faceY = useRef(new Animated.Value(bottomY)).current;
   const faceX = useRef(new Animated.Value(50)).current;
-  const currentX = useRef(50);
   const currentYRef = useRef<number>(bottomY);
   const velocityYRef = useRef<number>(0);
-const isDashingRef = useRef<boolean>(false);
 const isLongPressingRef = useRef<boolean>(false);
 const animationRef = useRef<number | null>(null);
 
   const bounceSound = useRef<Audio.Sound | null>(null);
   const dashSound = useRef<Audio.Sound | null>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newId = Date.now();
+      const gapY = 150 + Math.random() * (400 - 150);
+      setPipes(prev => [...prev, { id: newId, x: screenWidth, gapY }]);
+    }, 4500);
+
+    return () => clearInterval(interval);
+  }, [screenWidth]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPipes(prev =>
+        prev
+          .map(pipe => ({ ...pipe, x: pipe.x - currentPipeSpeed.current }))
+          .filter(pipe => pipe.x >= -pipeWidth)
+      );
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [pipeWidth]);
 
   useEffect(() => {
     const loadSounds = async () => {
@@ -59,19 +87,6 @@ const animationRef = useRef<number | null>(null);
         useNativeDriver: false,
       }).start();
 
-      // Horizontal screen boundary clamping (during dash)
-      // Edit screenWidth - faceSize or left (0) here to adjust horizontal limits
-      if (isDashingRef.current) {
-        let newX = currentX.current + velocityX;
-        currentX.current = Math.max(0, Math.min(newX, screenWidth - faceSize));
-        Animated.timing(faceX, {
-          toValue: currentX.current,
-          duration: 16,
-          easing: Easing.linear,
-          useNativeDriver: false,
-        }).start();
-      }
-
       animationRef.current = requestAnimationFrame(gameLoop);
     };
     animationRef.current = requestAnimationFrame(gameLoop);
@@ -87,22 +102,22 @@ const animationRef = useRef<number | null>(null);
 
 const handleLongPress = () => {
   console.log('Long press detected');
-  isDashingRef.current = true;
   isLongPressingRef.current = true;
+  currentPipeSpeed.current = fastPipeSpeed;
 
   dashSound.current?.setIsLoopingAsync(true);
   dashSound.current?.replayAsync();
 };
 
 const handlePressOut = () => {
-  isDashingRef.current = false;
   isLongPressingRef.current = false;
+  currentPipeSpeed.current = basePipeSpeed;
 
   dashSound.current?.stopAsync();
 };
 
   const handlePress = () => {
-    velocityYRef.current = -10;
+    velocityYRef.current = -8;
     bounceSound.current?.replayAsync();
   };
 
@@ -113,10 +128,20 @@ const handlePressOut = () => {
         <Image source={require('../assets/images/joshua_face.png')} style={{ width: 80, height: 80, borderRadius: 40 }} />
       </Animated.View>
 
+      {pipes.map(pipe => (
+        <Pipe
+          key={pipe.id}
+          x={pipe.x}
+          gapY={pipe.gapY}
+          gapHeight={gapHeight}
+          pipeWidth={pipeWidth}
+        />
+      ))}
+
       <Pressable
         onPress={handlePress}
         // Adjust the long press duration here (in milliseconds)
-        delayLongPress={150}
+        delayLongPress={100}
         onLongPress={handleLongPress}
         onPressOut={handlePressOut}
         style={{
