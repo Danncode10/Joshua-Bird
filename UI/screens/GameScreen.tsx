@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Image, Pressable, Animated, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, Pressable, Animated, Easing, StyleSheet, Dimensions } from 'react-native';
 import { Audio } from 'expo-av';
 
 const GameScreen: React.FC = () => {
@@ -52,14 +52,24 @@ const animationRef = useRef<number | null>(null);
         velocityYRef.current = 0;
       }
       currentYRef.current = newY;
-      faceY.setValue(newY);
+      Animated.timing(faceY, {
+        toValue: newY,
+        duration: 16,
+        easing: Easing.linear,
+        useNativeDriver: false,
+      }).start();
 
       // Horizontal screen boundary clamping (during dash)
       // Edit screenWidth - faceSize or left (0) here to adjust horizontal limits
       if (isDashingRef.current) {
         let newX = currentX.current + velocityX;
         currentX.current = Math.max(0, Math.min(newX, screenWidth - faceSize));
-        faceX.setValue(currentX.current);
+        Animated.timing(faceX, {
+          toValue: currentX.current,
+          duration: 16,
+          easing: Easing.linear,
+          useNativeDriver: false,
+        }).start();
       }
 
       animationRef.current = requestAnimationFrame(gameLoop);
