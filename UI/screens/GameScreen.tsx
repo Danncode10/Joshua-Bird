@@ -1,8 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Image, Pressable, Animated, StyleSheet } from 'react-native';
 
 const GameScreen: React.FC = () => {
   const [isLongPressed, setIsLongPressed] = useState(false);
+  const [currentY, setCurrentY] = useState(300);
+  const faceY = useRef(new Animated.Value(300)).current;
+  const faceX = useRef(new Animated.Value(50)).current;
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleLongPress = () => {
@@ -21,22 +24,24 @@ const GameScreen: React.FC = () => {
     setIsLongPressed(false);
   };
 
+  const handlePress = () => {
+    const newY = Math.max(currentY - 50, 0);
+    Animated.timing(faceY, {
+      toValue: newY,
+      duration: 300,
+      useNativeDriver: false,
+    }).start(() => setCurrentY(newY));
+  };
+
   return (
     <View style={styles.container}>
       <Text>Game Screen</Text>
-      <Image
-        source={require('../assets/images/joshua_face.png')}
-        style={{
-          position: 'absolute',
-          top: 100,
-          left: 50,
-          width: 80,
-          height: 80,
-        }}
-      />
+      <Animated.View style={{ position: 'absolute', top: faceY, left: faceX }}>
+        <Image source={require('../assets/images/joshua_face.png')} style={{ width: 80, height: 80, borderRadius: 40 }} />
+      </Animated.View>
 
       <Pressable
-        onPress={() => console.log('Tap detected')}
+        onPress={handlePress}
         onLongPress={handleLongPress}
         onPressOut={handlePressOut}
         style={{
