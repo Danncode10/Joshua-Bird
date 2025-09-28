@@ -14,7 +14,7 @@ const GameScreen: React.FC = () => {
     <View style={styles.container}>
       <Text>Game Screen</Text>
       <Image
-        source={require('../../assets/joshua_face.png')}
+        source={require('../../assets/images/joshua_face.png')}
         style={{
           position: 'absolute',
           top: 100,
