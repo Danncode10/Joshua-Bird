@@ -12,8 +12,9 @@ const GameScreen: React.FC = () => {
   const currentX = useRef(50);
   const currentYRef = useRef<number>(bottomY);
   const velocityYRef = useRef<number>(0);
-  const isDashingRef = useRef<boolean>(false);
-  const animationRef = useRef<number | null>(null);
+const isDashingRef = useRef<boolean>(false);
+const isLongPressingRef = useRef<boolean>(false);
+const animationRef = useRef<number | null>(null);
 
   const bounceSound = useRef<Audio.Sound | null>(null);
   const dashSound = useRef<Audio.Sound | null>(null);
@@ -37,7 +38,7 @@ const GameScreen: React.FC = () => {
     loadSounds();
 
     const gameLoop = () => {
-      velocityYRef.current += gravity;
+      velocityYRef.current += isLongPressingRef.current ? gravity / 50 : gravity;
       let newY = currentYRef.current + velocityYRef.current;
       if (newY > bottomY) {
         newY = bottomY;
@@ -69,19 +70,21 @@ const GameScreen: React.FC = () => {
     };
   }, []);
 
-  const handleLongPress = () => {
-    console.log('Long press detected');
-    isDashingRef.current = true;
+const handleLongPress = () => {
+  console.log('Long press detected');
+  isDashingRef.current = true;
+  isLongPressingRef.current = true;
 
-    dashSound.current?.setIsLoopingAsync(true);
-    dashSound.current?.replayAsync();
-  };
+  dashSound.current?.setIsLoopingAsync(true);
+  dashSound.current?.replayAsync();
+};
 
-  const handlePressOut = () => {
-    isDashingRef.current = false;
+const handlePressOut = () => {
+  isDashingRef.current = false;
+  isLongPressingRef.current = false;
 
-    dashSound.current?.stopAsync();
-  };
+  dashSound.current?.stopAsync();
+};
 
   const handlePress = () => {
     velocityYRef.current = -10;
@@ -97,7 +100,8 @@ const GameScreen: React.FC = () => {
 
       <Pressable
         onPress={handlePress}
-        delayLongPress={500}
+        // Adjust the long press duration here (in milliseconds)
+        delayLongPress={150}
         onLongPress={handleLongPress}
         onPressOut={handlePressOut}
         style={{

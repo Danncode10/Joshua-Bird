@@ -61,11 +61,11 @@
 
 **Current Implementation:**
 * A circular Pressable button (120x120, blue semi-transparent background with shadows) is positioned at the bottom center of the screen.
-* The face PNG (joshua_face.png) starts at position (50, 300) and responds to interactions.
-* **Tap:** Animates the face upward by 50 pixels (using Animated.timing with 300ms duration) and plays bounce.mp3 sound.
-* **Long-press (500ms delay):** Starts continuous rightward movement (10 pixels every 100ms using setInterval and Animated.timing), loops dash.mp3 sound until release.
-* **Release:** Stops the dash interval and sound.
-* Handlers use React hooks (useState for long-press state and current Y, useRef for animations, position, interval, and sounds) for management. Audio is loaded via Expo-AV on mount and unloaded on unmount.
+* The face PNG (joshua_face.png) starts at position (50, screenHeight - 250) and responds to interactions.
+* **Tap:** Applies upward velocity (-10) for a physics-based bounce and plays bounce.mp3 sound.
+* **Long-press (100ms delay):** Starts continuous rightward dashing (2 pixels per frame using requestAnimationFrame) while applying reduced gravity (1/3 original speed for slope-like movement), loops dash.mp3 sound until release.
+* **Release:** Stops the dash and reduced gravity, stops sound.
+* Handlers use React hooks (useRef for all states including long-press, positions, velocities, animation frame, and sounds) for management. Audio is loaded via Expo-AV on mount and unloaded on unmount. Physics loop uses requestAnimationFrame with gravity (0.5 base, 0.1/3 during long press), velocity updates, and boundary checks.
 
 ---
 
