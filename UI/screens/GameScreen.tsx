@@ -5,9 +5,15 @@ import { Audio } from 'expo-av';
 const GameScreen: React.FC = () => {
   const [isLongPressed, setIsLongPressed] = useState(false);
   const [currentY, setCurrentY] = useState(300);
-  const faceY = useRef(new Animated.Value(300)).current;
+  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+  const bottomY = screenHeight - 250;
+  const gravity = 0.5;
+  const faceY = useRef(new Animated.Value(bottomY)).current;
   const faceX = useRef(new Animated.Value(50)).current;
   const currentX = useRef(50);
+  const currentYRef = useRef<number>(bottomY);
+  const velocityYRef = useRef<number>(0);
+  const physicsRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const bounceSound = useRef<Audio.Sound | null>(null);
@@ -31,17 +37,35 @@ const GameScreen: React.FC = () => {
 
     loadSounds();
 
+    const physicsLoop = () => {
+      velocityYRef.current += gravity;
+      let newY = currentYRef.current + velocityYRef.current;
+      if (newY > bottomY) {
+        newY = bottomY;
+        velocityYRef.current = 0;
+      }
+      if (newY < 0) {
+        newY = 0;
+        velocityYRef.current = 0;
+      }
+      currentYRef.current = newY;
+      faceY.setValue(newY);
+    };
+    physicsRef.current = setInterval(physicsLoop, 16);
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
+      if (physicsRef.current) {
+        clearInterval(physicsRef.current);
+        physicsRef.current = null;
+      }
       bounceSound.current?.unloadAsync();
       dashSound.current?.unloadAsync();
     };
   }, []);
-
-  const { width: screenWidth } = Dimensions.get('window');
 
   const handleLongPress = () => {
     console.log('Long press detected');
@@ -70,13 +94,7 @@ const GameScreen: React.FC = () => {
   };
 
   const handlePress = () => {
-    const newY = Math.max(currentY - 50, 0);
-    Animated.timing(faceY, {
-      toValue: newY,
-      duration: 300,
-      useNativeDriver: false,
-    }).start(() => setCurrentY(newY));
-
+    velocityYRef.current = -10;
     bounceSound.current?.replayAsync();
   };
 
