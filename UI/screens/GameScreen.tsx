@@ -102,6 +102,10 @@ const animationRef = useRef<number | null>(null);
 
 const handleLongPress = () => {
   console.log('Long press detected');
+  faceY.stopAnimation((value) => {
+    currentYRef.current = value;
+    velocityYRef.current = 0;
+  });
   isLongPressingRef.current = true;
   currentPipeSpeed.current = fastPipeSpeed;
 
