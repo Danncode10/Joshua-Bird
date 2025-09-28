@@ -1,9 +1,17 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative',
+    backgroundColor: '#f0f0f0',
+  },
+});
 
 const GameScreen: React.FC = () => {
   return (
-    <View style={{ position: 'relative' }}>
+    <View style={styles.container}>
       <Text>Game Screen</Text>
       <Image
         source={require('../../assets/joshua_face.png')}
