@@ -3,10 +3,11 @@ import { View, Text, Image, Pressable, Animated, StyleSheet, Dimensions } from '
 import { Audio } from 'expo-av';
 
 const GameScreen: React.FC = () => {
-  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-  const bottomY = screenHeight - 250;
-  const gravity = 0.5;
-  const velocityX = 2;
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const faceSize = 80;
+const bottomY = screenHeight - 140; // Adjusted to prevent bottom clipping (faceSize + 40px margin)
+const gravity = 0.5;
+const velocityX = 2;
   const faceY = useRef(new Animated.Value(bottomY)).current;
   const faceX = useRef(new Animated.Value(50)).current;
   const currentX = useRef(50);
@@ -38,6 +39,8 @@ const animationRef = useRef<number | null>(null);
     loadSounds();
 
     const gameLoop = () => {
+      // Vertical screen boundary clamping
+      // Edit bottomY or top (0) here to adjust vertical limits (bottomY adjusted for margin)
       velocityYRef.current += isLongPressingRef.current ? gravity / 50 : gravity;
       let newY = currentYRef.current + velocityYRef.current;
       if (newY > bottomY) {
@@ -51,9 +54,11 @@ const animationRef = useRef<number | null>(null);
       currentYRef.current = newY;
       faceY.setValue(newY);
 
+      // Horizontal screen boundary clamping (during dash)
+      // Edit screenWidth - faceSize or left (0) here to adjust horizontal limits
       if (isDashingRef.current) {
         let newX = currentX.current + velocityX;
-        currentX.current = Math.max(0, Math.min(newX, screenWidth - 80));
+        currentX.current = Math.max(0, Math.min(newX, screenWidth - faceSize));
         faceX.setValue(currentX.current);
       }
 
