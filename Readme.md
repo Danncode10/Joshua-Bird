@@ -31,7 +31,7 @@
      /screens
      /documentation
    ```
-5. Style temporarily with `StyleSheet`.
+5. Style all components with `StyleSheet`.
 6. Configure `.gitignore` (node_modules, expo, build, etc.)
 
 ---
