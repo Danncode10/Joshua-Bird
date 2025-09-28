@@ -59,6 +59,13 @@
 * Include audio triggers for each action.
 * Use Expo-AV or React Native Sound for audio playback.
 
+**Current Implementation:**
+* A circular Pressable button (120x120, blue semi-transparent background with shadows) is positioned at the bottom center of the screen.
+* The face PNG is static and non-responsive to touches.
+* **Tap:** Logs "Tap detected" to console (future: trigger bounce upward).
+* **Long-press:** Logs "Long press detected" once on activation, then "Continuous long press detected" every 500ms while held (using setInterval and onPressOut to clear), simulating continuous forward movement for future dash mechanics.
+* Handlers use React hooks (useState, useRef) for interval management.
+
 ---
 
 ## **Phase 3 — Physics & Movement**
