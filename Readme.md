@@ -61,10 +61,11 @@
 
 **Current Implementation:**
 * A circular Pressable button (120x120, blue semi-transparent background with shadows) is positioned at the bottom center of the screen.
-* The face PNG is static and non-responsive to touches.
-* **Tap:** Logs "Tap detected" to console (future: trigger bounce upward).
-* **Long-press:** Logs "Long press detected" once on activation, then "Continuous long press detected" every 500ms while held (using setInterval and onPressOut to clear), simulating continuous forward movement for future dash mechanics.
-* Handlers use React hooks (useState, useRef) for interval management.
+* The face PNG (joshua_face.png) starts at position (50, 300) and responds to interactions.
+* **Tap:** Animates the face upward by 50 pixels (using Animated.timing with 300ms duration) and plays bounce.mp3 sound.
+* **Long-press (500ms delay):** Starts continuous rightward movement (10 pixels every 100ms using setInterval and Animated.timing), loops dash.mp3 sound until release.
+* **Release:** Stops the dash interval and sound.
+* Handlers use React hooks (useState for long-press state and current Y, useRef for animations, position, interval, and sounds) for management. Audio is loaded via Expo-AV on mount and unloaded on unmount.
 
 ---
 
